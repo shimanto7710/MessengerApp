@@ -39,6 +39,7 @@ public class RecyclerViewAdapterV2 extends RecyclerView.Adapter<RecyclerViewAdap
 
     public ArrayList<RecyclerViewModel> usersList = new ArrayList<>();
     private List<RecyclerViewModel> contactListFiltered;
+    int selfId,friendId;
 
     Context mContext;
     private ApiInterface apiInterface;
@@ -60,11 +61,12 @@ public class RecyclerViewAdapterV2 extends RecyclerView.Adapter<RecyclerViewAdap
     }
 
 
-    public RecyclerViewAdapterV2(Context context, ArrayList<RecyclerViewModel> userList) {
+    public RecyclerViewAdapterV2(Context context, ArrayList<RecyclerViewModel> userList,int selfId) {
         this.mContext = context;
         this.usersList = userList;
         this.contactListFiltered=userList;
         apiInterface = RetrofitApiClient.getClient().create(ApiInterface.class);
+        this.selfId=selfId;
 
     }
 
@@ -78,14 +80,17 @@ public class RecyclerViewAdapterV2 extends RecyclerView.Adapter<RecyclerViewAdap
 
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
-        RecyclerViewModel movie = usersList.get(position);
+        final RecyclerViewModel movie = usersList.get(position);
         holder.titleTv.setText(movie.getName());
 
 //        holder.subTitleTv.setText(movie.getPosting());
         holder.button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                acceptFriendRequest(7,5);
+
+                acceptFriendRequest(selfId,movie.getId());
+
+                Log.d("vvvvv",selfId+" "+movie.getId());
             }
         });
 

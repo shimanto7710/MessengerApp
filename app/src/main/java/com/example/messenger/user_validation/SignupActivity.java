@@ -1,6 +1,7 @@
 package com.example.messenger.user_validation;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 //import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -12,7 +13,9 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.messenger.MainActivity;
 import com.example.messenger.R;
+import com.example.messenger.SharedPref.MyPreferences;
 import com.example.messenger.network.ApiInterface;
 import com.example.messenger.network.RetrofitApiClient;
 import com.example.messenger.retrofit.ServerResponse;
@@ -24,6 +27,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+
 public class SignupActivity extends AppCompatActivity {
     private static final String TAG = "SignupActivity";
     private ApiInterface apiInterface;
@@ -32,6 +36,9 @@ public class SignupActivity extends AppCompatActivity {
     @InjectView(R.id.input_password) EditText _passwordText;
     @InjectView(R.id.btn_signup) Button _signupButton;
     @InjectView(R.id.link_login) TextView _loginLink;
+    private MyPreferences myPreferences;
+
+
 
     ProgressDialog progressDialog;
     @Override
@@ -39,6 +46,10 @@ public class SignupActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
         ButterKnife.inject(this);
+        final String PREF_NAME="login_check";
+        myPreferences = MyPreferences.getPreferences(this);
+//        myPreferences.setUserName(PREF_NAME);
+
          progressDialog = new ProgressDialog(SignupActivity.this,
                 R.style.AppTheme_Dark_Dialog);
         _signupButton.setOnClickListener(new View.OnClickListener() {
@@ -94,8 +105,13 @@ public class SignupActivity extends AppCompatActivity {
     }
 
 
-    public void onSignupSuccess() {
+    public void onSignupSuccess(String email) {
         _signupButton.setEnabled(true);
+        myPreferences.setOneTimeUse(true);
+        myPreferences.setUserName(email);
+        Intent intent=new Intent(getApplicationContext(), MainActivity.class);
+        startActivity(intent);
+
         setResult(RESULT_OK, null);
         finish();
     }
@@ -138,7 +154,7 @@ public class SignupActivity extends AppCompatActivity {
     }
 
 
-    public void insertUser(String name,String email,String passeord) {
+    public void insertUser(String name, final String email, String passeord) {
 
 
 //        progressBar.setVisibility(View.VISIBLE);
@@ -157,7 +173,7 @@ public class SignupActivity extends AppCompatActivity {
                 if (validity.isSuccess()) {
                     Toast.makeText(getBaseContext(), "Successfully "+validity.getMessage(), Toast.LENGTH_LONG).show();
                     Log.d("aaa", "success: ");
-                    onSignupSuccess();
+                    onSignupSuccess(email);
                 } else {
                     Toast.makeText(getBaseContext(), ""+validity.getMessage(), Toast.LENGTH_LONG).show();
                     Log.d("aaa", "already inserted: "+validity.getMessage());

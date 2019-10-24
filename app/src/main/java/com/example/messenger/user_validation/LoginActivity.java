@@ -19,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.messenger.MainActivity;
 import com.example.messenger.R;
+import com.example.messenger.SharedPref.MyPreferences;
 import com.example.messenger.network.ApiInterface;
 import com.example.messenger.network.RetrofitApiClient;
 import com.example.messenger.retrofit.ServerResponse;
@@ -45,13 +46,16 @@ public class LoginActivity extends AppCompatActivity {
 
     ProgressDialog progressDialog;
     ImageView loginImage;
-
+    private MyPreferences myPreferences;
     @SuppressLint("WrongViewCast")
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         ButterKnife.inject(this);
+//        final String PREF_NAME="login_check";
+        myPreferences = MyPreferences.getPreferences(this);
+//        myPreferences.setUserName(PREF_NAME);
 
         loginImage = (ImageView) findViewById(R.id.login_img);
 
@@ -143,8 +147,13 @@ public class LoginActivity extends AppCompatActivity {
         moveTaskToBack(true);
     }
 
-    public void onLoginSuccess() {
+    public void onLoginSuccess(User user) {
         _loginButton.setEnabled(true);
+
+        myPreferences.setOneTimeUse(true);
+        myPreferences.setUserName(user.getEmail());
+
+
         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
 //        intent.putExtra("id",)
         startActivity(intent);
@@ -181,7 +190,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
 
-    public void checkUserValidity(User user) {
+    public void checkUserValidity(final User user) {
 
 
 //        progressBar.setVisibility(View.VISIBLE);
@@ -198,7 +207,7 @@ public class LoginActivity extends AppCompatActivity {
 //                Toast.makeText(getApplicationContext(), validity.getMessage(), Toast.LENGTH_LONG).show();
                 if (validity.isSuccess()) {
                     Toast.makeText(getBaseContext(), "Successful", Toast.LENGTH_LONG).show();
-                    onLoginSuccess();
+                    onLoginSuccess(user);
                     Log.d("aaa", "success: ");
                 } else {
                     Toast.makeText(getBaseContext(), "Failed", Toast.LENGTH_LONG).show();

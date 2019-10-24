@@ -36,4 +36,7 @@ public interface ApiInterface {
     @GET("/messenger/insert_user.php")
     Call <ServerResponse> inserUser(@Query("name") String name,@Query("email") String email,@Query("password") String password);
 
+    @GET("/messenger/get_self_id.php")
+    Call <ServerResponse> getSelfId(@Query("email") String email);
+
 }

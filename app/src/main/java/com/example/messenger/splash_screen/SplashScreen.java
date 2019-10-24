@@ -11,15 +11,19 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.messenger.MainActivity;
 import com.example.messenger.R;
+import com.example.messenger.SharedPref.MyPreferences;
 import com.example.messenger.user_validation.LoginActivity;
 
 public class SplashScreen extends AppCompatActivity {
     Boolean finishFlag=false;
+    private MyPreferences myPreferences;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.splash_screen_activity);
-
+//        final String PREF_NAME="login_check";
+        myPreferences = MyPreferences.getPreferences(this);
+//        myPreferences.setUserName(PREF_NAME);
         splashWithBackgroundThread();
 
         finishFlag=false;
@@ -40,11 +44,17 @@ public class SplashScreen extends AppCompatActivity {
                     sleep(1 * 1000);
 
                     // After 5 seconds redirect to another intent
-                    Intent i = new Intent(getBaseContext(), LoginActivity.class);
-                    startActivity(i);
+                    if (!myPreferences.getOneTimeUse()) {
+                        Intent i = new Intent(getBaseContext(), LoginActivity.class);
+                        startActivity(i);
+                        finish();
+                    }else{
+                        Intent i = new Intent(getBaseContext(), MainActivity.class);
+                        startActivity(i);
+                        finish();
+                    }
 
                     //Remove activity
-                    finish();
                 } catch (Exception e) {
                 }
             }

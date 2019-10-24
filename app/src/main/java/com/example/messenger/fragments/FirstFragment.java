@@ -56,6 +56,13 @@ public class FirstFragment extends Fragment {
 
     ProgressDialog progressDialog;
     private ApiInterface apiInterface;
+    int selfId;
+
+    String email;
+
+    public FirstFragment(String email){
+        this.email=email;
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -69,9 +76,9 @@ public class FirstFragment extends Fragment {
         progressDialog.setMessage("Loading...");
         constraintLayout = (ConstraintLayout) view.findViewById(R.id.ConstraintLayout);
 
-        user_list.add(new RecyclerViewModel(1,"shimanto"));
-        user_list.add(new RecyclerViewModel(1,"shimanto"));
-        user_list.add(new RecyclerViewModel(1,"shimanto"));
+//        user_list.add(new RecyclerViewModel(1,"shimanto"));
+//        user_list.add(new RecyclerViewModel(1,"shimanto"));
+//        user_list.add(new RecyclerViewModel(1,"shimanto"));
 
 
         recyclerView = (RecyclerView) view.findViewById(R.id.recyclerView11);
@@ -82,8 +89,9 @@ public class FirstFragment extends Fragment {
 //        recyclerView.addItemDecoration(new MyDividerItemDecoration(this, DividerItemDecoration.VERTICAL, 36));
         recyclerView.setAdapter(recyclerViewAdapter);
 
+        getSelfId(email);
 
-        getFriendData(7);
+//        getFriendData(7);
 
         enableSwipeToDeleteAndUndo();
 
@@ -172,6 +180,48 @@ public class FirstFragment extends Fragment {
 
         ItemTouchHelper itemTouchhelper = new ItemTouchHelper(swipeToDeleteCallback);
         itemTouchhelper.attachToRecyclerView(recyclerView);
+    }
+
+
+
+    public int getSelfId(String email) {
+
+        final int[] id = new int[1];
+
+//        progressBar.setVisibility(View.VISIBLE);
+        Call<ServerResponse> call = apiInterface.getSelfId(email);
+
+        call.enqueue(new Callback<ServerResponse>() {
+
+            @Override
+            public void onResponse(Call<ServerResponse> call, Response<ServerResponse> response) {
+
+//                progressBar.setVisibility(View.GONE);
+                ServerResponse validity = response.body();
+//                ipAddressTextView.setText(validity.getMessage());
+                Toast.makeText(getContext(), validity.getMessage(), Toast.LENGTH_LONG).show();
+                Log.d("aaa", "success: " + validity.getMessage());
+
+                id[0] = Integer.parseInt(validity.getMessage());
+
+                getFriendData(id[0]);
+
+
+            }
+
+            @Override
+            public void onFailure(Call call, Throwable t) {
+//                Log.e(TAG, t.toString());
+//                progressBar.setVisibility(View.GONE);
+                Toast.makeText(getContext(), t.getMessage(), Toast.LENGTH_LONG).show();
+                Log.d("aaa", "onFailure: " + t.getMessage());
+                Log.d("aaa", "onFailure: ");
+
+            }
+        });
+
+        return id[0];
+
     }
 
 

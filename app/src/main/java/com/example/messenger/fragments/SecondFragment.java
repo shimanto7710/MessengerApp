@@ -2,6 +2,7 @@ package com.example.messenger.fragments;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -52,6 +53,14 @@ public class SecondFragment extends Fragment {
     ProgressDialog progressDialog;
     private ApiInterface apiInterface;
 
+    int selfId;
+    String email;
+
+    public SecondFragment(String email){
+        this.email=email;
+    }
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -66,21 +75,22 @@ public class SecondFragment extends Fragment {
         progressDialog.setMessage("Loading...");
         constraintLayout = (ConstraintLayout) view.findViewById(R.id.ConstraintLayout);
 
-        user_list.add(new RecyclerViewModel(1,"shimanto"));
-        user_list.add(new RecyclerViewModel(1,"shimanto"));
-        user_list.add(new RecyclerViewModel(1,"shimanto"));
+//        user_list.add(new RecyclerViewModel(1,"shimanto"));
+//        user_list.add(new RecyclerViewModel(1,"shimanto"));
+//        user_list.add(new RecyclerViewModel(1,"shimanto"));
 
 
         recyclerView = (RecyclerView) view.findViewById(R.id.recyclerView11);
-        recyclerViewAdapter = new RecyclerViewAdapterV2(getContext(), user_list);
-        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getContext());
-        recyclerView.setLayoutManager(mLayoutManager);
-        recyclerView.setItemAnimator(new DefaultItemAnimator());
-//        recyclerView.addItemDecoration(new MyDividerItemDecoration(this, DividerItemDecoration.VERTICAL, 36));
-        recyclerView.setAdapter(recyclerViewAdapter);
+//        recyclerViewAdapter = new RecyclerViewAdapterV2(getContext(), user_list);
+//        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getContext());
+//        recyclerView.setLayoutManager(mLayoutManager);
+//        recyclerView.setItemAnimator(new DefaultItemAnimator());
+////        recyclerView.addItemDecoration(new MyDividerItemDecoration(this, DividerItemDecoration.VERTICAL, 36));
+//        recyclerView.setAdapter(recyclerViewAdapter);
 
 
-        getFriendData(7);
+        getSelfId(email);
+//        getFriendData(7);
 
 //        enableSwipeToDeleteAndUndo();
 
@@ -94,7 +104,7 @@ public class SecondFragment extends Fragment {
 
 
 
-    public void getFriendData(int id) {
+    public void getFriendData(final int id) {
 
         progressDialog.show();
 //        progressBar.setVisibility(View.VISIBLE);
@@ -117,7 +127,13 @@ public class SecondFragment extends Fragment {
                         user_list.add(validity.get(i));
 //                        Log.d("kkk",validity.get(i).getName());
                     }
+                    recyclerViewAdapter = new RecyclerViewAdapterV2(getContext(), user_list,id);
+                    RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getContext());
+                    recyclerView.setLayoutManager(mLayoutManager);
+                    recyclerView.setItemAnimator(new DefaultItemAnimator());
+                    recyclerView.setAdapter(recyclerViewAdapter);
                     recyclerViewAdapter.notifyDataSetChanged();
+
                 }
 
                 Toast.makeText(getContext(),  "Data Loaded", Toast.LENGTH_LONG).show();
@@ -141,6 +157,43 @@ public class SecondFragment extends Fragment {
     }
 
 
+    public int getSelfId(String email) {
+
+        final int[] id = new int[1];
+
+//        progressBar.setVisibility(View.VISIBLE);
+        Call<ServerResponse> call = apiInterface.getSelfId(email);
+
+        call.enqueue(new Callback<ServerResponse>() {
+
+            @Override
+            public void onResponse(Call<ServerResponse> call, Response<ServerResponse> response) {
+
+//                progressBar.setVisibility(View.GONE);
+                ServerResponse validity = response.body();
+//                ipAddressTextView.setText(validity.getMessage());
+                Toast.makeText(getContext(), validity.getMessage(), Toast.LENGTH_LONG).show();
+                Log.d("aaa", "success: " + validity.getMessage());
+
+                id[0] = Integer.parseInt(validity.getMessage());
+                getFriendData(id[0]);
+
+            }
+
+            @Override
+            public void onFailure(Call call, Throwable t) {
+//                Log.e(TAG, t.toString());
+//                progressBar.setVisibility(View.GONE);
+                Toast.makeText(getContext(), t.getMessage(), Toast.LENGTH_LONG).show();
+                Log.d("aaa", "onFailure: " + t.getMessage());
+                Log.d("aaa", "onFailure: ");
+
+            }
+        });
+
+        return id[0];
+
+    }
 
 
 
