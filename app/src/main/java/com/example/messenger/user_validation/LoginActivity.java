@@ -1,6 +1,8 @@
 package com.example.messenger.user_validation;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
+import android.media.Image;
 import android.os.Bundle;
 //import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -9,35 +11,61 @@ import android.content.Intent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.messenger.MainActivity;
 import com.example.messenger.R;
+import com.example.messenger.network.ApiInterface;
+import com.example.messenger.network.RetrofitApiClient;
+import com.example.messenger.retrofit.ServerResponse;
+import com.example.messenger.retrofit.User;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity {
     private static final String TAG = "LoginActivity";
     private static final int REQUEST_SIGNUP = 0;
+    private ApiInterface apiInterface;
+    @InjectView(R.id.input_email)
+    EditText _emailText;
+    @InjectView(R.id.input_password)
+    EditText _passwordText;
+    @InjectView(R.id.btn_login)
+    Button _loginButton;
+    @InjectView(R.id.link_signup)
+    TextView _signupLink;
 
-    @InjectView(R.id.input_email) EditText _emailText;
-    @InjectView(R.id.input_password) EditText _passwordText;
-    @InjectView(R.id.btn_login) Button _loginButton;
-    @InjectView(R.id.link_signup) TextView _signupLink;
+    ProgressDialog progressDialog;
+    ImageView loginImage;
 
+    @SuppressLint("WrongViewCast")
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         ButterKnife.inject(this);
 
+        loginImage = (ImageView) findViewById(R.id.login_img);
+
+        apiInterface = RetrofitApiClient.getClient().create(ApiInterface.class);
+
+        progressDialog = new ProgressDialog(LoginActivity.this,
+                R.style.AppTheme_Dark_Dialog);
+
         _loginButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
+//                checkUserValidity(new User("shimanto7710@gmail.com", "xxxx"));
+
                 login();
             }
         });
@@ -51,6 +79,14 @@ public class LoginActivity extends AppCompatActivity {
                 startActivityForResult(intent, REQUEST_SIGNUP);
             }
         });
+
+        loginImage.setOnClickListener(new View.OnClickListener() {
+                                          @Override
+                                          public void onClick(View view) {
+                                              checkUserValidity(new User("shimanto7710@gmail.com", "xxxx"));
+                                          }
+                                      }
+        );
     }
 
     public void login() {
@@ -63,24 +99,27 @@ public class LoginActivity extends AppCompatActivity {
 
         _loginButton.setEnabled(false);
 
-        final ProgressDialog progressDialog = new ProgressDialog(LoginActivity.this,
-                R.style.AppTheme_Dark_Dialog);
+
         progressDialog.setIndeterminate(true);
         progressDialog.setMessage("Authenticating...");
         progressDialog.show();
 
-        String email = _emailText.getText().toString();
-        String password = _passwordText.getText().toString();
+        final String email = _emailText.getText().toString();
+        final String password = _passwordText.getText().toString();
 
         // TODO: Implement your own authentication logic here.
+
 
         new android.os.Handler().postDelayed(
                 new Runnable() {
                     public void run() {
                         // On complete call either onLoginSuccess or onLoginFailed
-                        onLoginSuccess();
-                        // onLoginFailed();
-                        progressDialog.dismiss();
+
+//                        boolean lCheck=checkUserValidity(new User(email,password));
+                        checkUserValidity(new User(email, password));
+
+//                         onLoginFailed();
+
                     }
                 }, 3000);
     }
@@ -106,6 +145,7 @@ public class LoginActivity extends AppCompatActivity {
 
     public void onLoginSuccess() {
         _loginButton.setEnabled(true);
+        startActivity(new Intent(getApplicationContext(), MainActivity.class));
         finish();
     }
 
@@ -137,4 +177,48 @@ public class LoginActivity extends AppCompatActivity {
 
         return valid;
     }
+
+
+    public void checkUserValidity(User user) {
+
+
+//        progressBar.setVisibility(View.VISIBLE);
+        Call<ServerResponse> call = apiInterface.getUserValidity(user);
+
+        call.enqueue(new Callback<ServerResponse>() {
+
+            @Override
+            public void onResponse(Call<ServerResponse> call, Response<ServerResponse> response) {
+
+//                progressBar.setVisibility(View.GONE);
+                ServerResponse validity = response.body();
+//                ipAddressTextView.setText(validity.getMessage());
+//                Toast.makeText(getApplicationContext(), validity.getMessage(), Toast.LENGTH_LONG).show();
+                if (validity.isSuccess()) {
+                    Toast.makeText(getBaseContext(), "Successful", Toast.LENGTH_LONG).show();
+                    onLoginSuccess();
+                    Log.d("aaa", "success: ");
+                } else {
+                    Toast.makeText(getBaseContext(), "Failed", Toast.LENGTH_LONG).show();
+                    onLoginFailed();
+                }
+                progressDialog.dismiss();
+
+            }
+
+            @Override
+            public void onFailure(Call call, Throwable t) {
+//                Log.e(TAG, t.toString());
+//                progressBar.setVisibility(View.GONE);
+                Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_LONG).show();
+                Log.d("aaa", "onFailure: " + t.getMessage());
+                Log.d("aaa", "onFailure: ");
+
+            }
+        });
+
+
+    }
+
+
 }
