@@ -55,6 +55,7 @@ public class SignupActivity extends AppCompatActivity {
                 finish();
             }
         });
+//        insertUser("name","name@gmail.cm","xxxx");
     }
 
     public void signup() {
@@ -154,12 +155,12 @@ public class SignupActivity extends AppCompatActivity {
 //                ipAddressTextView.setText(validity.getMessage());
 //                Toast.makeText(getApplicationContext(), validity.getMessage(), Toast.LENGTH_LONG).show();
                 if (validity.isSuccess()) {
-                    Toast.makeText(getBaseContext(), "Successful", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getBaseContext(), "Successfully "+validity.getMessage(), Toast.LENGTH_LONG).show();
                     Log.d("aaa", "success: ");
-                    onSignupFailed();
+                    onSignupSuccess();
                 } else {
-                    Toast.makeText(getBaseContext(), "Failed", Toast.LENGTH_LONG).show();
-                    Log.d("aaa", "already inserted: ");
+                    Toast.makeText(getBaseContext(), ""+validity.getMessage(), Toast.LENGTH_LONG).show();
+                    Log.d("aaa", "already inserted: "+validity.getMessage());
                     onSignupFailed();
                 }
                 progressDialog.dismiss();
@@ -173,6 +174,7 @@ public class SignupActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_LONG).show();
                 Log.d("aaa", "onFailure: " + t.getMessage());
                 Log.d("aaa", "onFailure: ");
+                onSignupFailed();
 
             }
         });
