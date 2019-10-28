@@ -2,6 +2,7 @@ package com.example.messenger.fragments;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -19,7 +20,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.messenger.MessengerActivity;
 import com.example.messenger.R;
+import com.example.messenger.RecyclerView.RecyclerItemClickListener;
 import com.example.messenger.RecyclerView.RecyclerViewAdapter;
 import com.example.messenger.RecyclerView.RecyclerViewModel;
 import com.example.messenger.RecyclerView.SwipeToDeleteCallback;
@@ -94,6 +97,23 @@ public class FirstFragment extends Fragment {
 //        getFriendData(7);
 
         enableSwipeToDeleteAndUndo();
+
+
+
+        recyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getContext(), recyclerView, new RecyclerItemClickListener.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+                Intent intent=new Intent(getContext(), MessengerActivity.class);
+                intent.putExtra("name",user_list.get(position).getName());
+                intent.putExtra("friendId",user_list.get(position).getId());
+                startActivity(intent);
+            }
+
+            @Override
+            public void onItemLongClick(View view, int position) {
+//                Log.d("asd","asd");
+            }
+        }));
 
 
         return view;

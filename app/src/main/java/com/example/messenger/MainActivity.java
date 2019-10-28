@@ -5,6 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.MenuItemCompat;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -16,6 +19,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.example.messenger.RecyclerView.RecyclerViewAdapterV2;
+import com.example.messenger.RecyclerView.RecyclerViewModel;
 import com.example.messenger.SharedPref.MyPreferences;
 import com.example.messenger.fragments.FirstFragment;
 import com.example.messenger.fragments.SecondFragment;
@@ -25,6 +30,8 @@ import com.example.messenger.retrofit.ServerResponse;
 import com.example.messenger.retrofit.User;
 import com.example.messenger.user_validation.LoginActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -136,6 +143,8 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("aaa", "success: " + validity.getMessage());
 
                 id[0] = Integer.parseInt(validity.getMessage());
+                myPreferences.setId(id[0]);
+
 
 
             }
@@ -154,6 +163,10 @@ public class MainActivity extends AppCompatActivity {
         return id[0];
 
     }
+
+
+
+
 
 
 }

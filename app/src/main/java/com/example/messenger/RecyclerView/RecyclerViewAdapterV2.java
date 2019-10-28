@@ -1,6 +1,8 @@
 package com.example.messenger.RecyclerView;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,7 +38,7 @@ import retrofit2.Response;
  */
 
 public class RecyclerViewAdapterV2 extends RecyclerView.Adapter<RecyclerViewAdapterV2.MyViewHolder> implements Filterable{
-
+    private Handler mHandler;
     public ArrayList<RecyclerViewModel> usersList = new ArrayList<>();
     private List<RecyclerViewModel> contactListFiltered;
     int selfId,friendId;
@@ -67,6 +69,7 @@ public class RecyclerViewAdapterV2 extends RecyclerView.Adapter<RecyclerViewAdap
         this.contactListFiltered=userList;
         apiInterface = RetrofitApiClient.getClient().create(ApiInterface.class);
         this.selfId=selfId;
+        mHandler = new Handler(Looper.getMainLooper());
 
     }
 
@@ -79,7 +82,7 @@ public class RecyclerViewAdapterV2 extends RecyclerView.Adapter<RecyclerViewAdap
     }
 
     @Override
-    public void onBindViewHolder(MyViewHolder holder, int position) {
+    public void onBindViewHolder(MyViewHolder holder, final int position) {
         final RecyclerViewModel movie = usersList.get(position);
         holder.titleTv.setText(movie.getName());
 
@@ -88,7 +91,7 @@ public class RecyclerViewAdapterV2 extends RecyclerView.Adapter<RecyclerViewAdap
             @Override
             public void onClick(View view) {
 
-                acceptFriendRequest(selfId,movie.getId());
+                acceptFriendRequest(selfId,movie.getId(),position);
 
                 Log.d("vvvvv",selfId+" "+movie.getId());
             }
@@ -152,7 +155,7 @@ public class RecyclerViewAdapterV2 extends RecyclerView.Adapter<RecyclerViewAdap
         return usersList;
     }
 
-    public void acceptFriendRequest(int selfId,int friendId){
+    public void acceptFriendRequest(int selfId, int friendId, final int pos){
 
 //        progressDialog.show();
 
@@ -167,15 +170,20 @@ public class RecyclerViewAdapterV2 extends RecyclerView.Adapter<RecyclerViewAdap
 //                ipAddressTextView.setText(validity.getMessage());
 //                Toast.makeText(getApplicationContext(), validity.getMessage(), Toast.LENGTH_LONG).show();
                 if (validity.isSuccess()) {
-//                    Toast.makeText(, "Successful", Toast.LENGTH_LONG).show();
-//                    this.notify();
-                    notifyDataSetChanged();
+
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            usersList.remove(pos);
+                            notifyDataSetChanged();
+                        }
+                    });
+
                     Log.d("aaa", "success: ");
                 } else {
-//                    Toast.makeText(getContext(), "Failed", Toast.LENGTH_LONG).show();
-//                    onLoginFailed();
+
                 }
-//                progressDialog.dismiss();
+
 
             }
 

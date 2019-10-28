@@ -6,4 +6,5 @@ public class Config {
     public static final String USER_NAME = "user_name";
     public static final String ONE_TIME_USE = "one_time_use";
     public static final String email="email";
+    public static final String ID="id";
 }

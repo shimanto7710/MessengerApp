@@ -1,5 +1,6 @@
 package com.example.messenger.network;
 
+import com.example.messenger.DatabaseMessageModel;
 import com.example.messenger.RecyclerView.RecyclerViewModel;
 import com.example.messenger.retrofit.ServerResponse;
 import com.example.messenger.retrofit.User;
@@ -8,6 +9,8 @@ import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.Field;
+import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
@@ -38,5 +41,12 @@ public interface ApiInterface {
 
     @GET("/messenger/get_self_id.php")
     Call <ServerResponse> getSelfId(@Query("email") String email);
+
+    @FormUrlEncoded
+    @POST("/messenger/upload.php")
+    Call<ServerResponse> uploadImageToServer(@Field("self") int self,@Field("friend") int friend,@Field("msg") String msg,@Field("title") String title,@Field("image") String image);
+
+    @GET("/messenger/get_msg.php")
+    Call <List<DatabaseMessageModel>> getMessage(@Query("self") int self,@Query("friend") int friend);
 
 }

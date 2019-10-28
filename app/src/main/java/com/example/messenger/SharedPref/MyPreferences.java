@@ -68,5 +68,12 @@ public class MyPreferences {
         return sharedPreferences.getBoolean(Config.ONE_TIME_USE, false); //assume the default value is false
     }
 
+    public void setId(int id){
+        editor.putInt(Config.ID, id);
+        editor.apply();
+    }
+    public int getId(){
+        return sharedPreferences.getInt(Config.ID, -1); //assume the default value is false
+    }
 
 }
