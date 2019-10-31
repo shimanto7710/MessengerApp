@@ -1,39 +1,31 @@
 package com.example.messenger;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
-import android.app.ProgressDialog;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
-import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.example.messenger.RecyclerView.RecyclerViewAdapterV2;
+import com.ayush.imagesteganographylibrary.Text.AsyncTaskCallback.TextDecodingCallback;
+import com.ayush.imagesteganographylibrary.Text.ImageSteganography;
+import com.ayush.imagesteganographylibrary.Text.TextDecoding;
 import com.example.messenger.SharedPref.MyPreferences;
 import com.example.messenger.messenger.MessageAdapter;
 import com.example.messenger.messenger.MessageItem;
@@ -41,15 +33,10 @@ import com.example.messenger.network.ApiInterface;
 import com.example.messenger.network.RetrofitApiClient;
 import com.example.messenger.retrofit.ServerResponse;
 import com.example.messenger.retrofit.User;
-import com.example.messenger.user_validation.LoginActivity;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.List;
 import java.util.Random;
 
@@ -57,7 +44,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MessengerActivity extends AppCompatActivity {
+public class MessengerActivity extends AppCompatActivity implements TextDecodingCallback {
     private ApiInterface apiInterface;
     Bitmap bitmap;
     private MyPreferences myPreferences;
@@ -79,7 +66,7 @@ public class MessengerActivity extends AppCompatActivity {
 
         apiInterface = RetrofitApiClient.getClient().create(ApiInterface.class);
         myPreferences = MyPreferences.getPreferences(this);
-        Intent intent = getIntent();
+        final Intent intent = getIntent();
         name = intent.getStringExtra("name");
         editText = (EditText) findViewById(R.id.editText);
 
@@ -89,6 +76,8 @@ public class MessengerActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
+        TextDecoding textDecoding = new TextDecoding(MessengerActivity.this, MessengerActivity.this);
+
         mHandler = new Handler(Looper.getMainLooper());
 
         friendId = intent.getIntExtra("friendId", -1);
@@ -96,7 +85,7 @@ public class MessengerActivity extends AppCompatActivity {
 
 
         list = findViewById(R.id.messages_view);
-        customAdapter = new MessageAdapter(this);
+        customAdapter = new MessageAdapter(this,textDecoding);
         list.setAdapter(customAdapter);
         dataList = new ArrayList<>();
 //        dataList.add(new MessageItem("Hey", new User(name),false));
@@ -122,16 +111,24 @@ public class MessengerActivity extends AppCompatActivity {
 //                customAdapter.notifyDataSetChanged();
 
 
-//                list.post(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        // Select the last row so it will scroll into view...
-//                        list.setSelection(customAdapter.getCount() - 1);
-//                    }
-//                });
-
             }
         });
+
+
+        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                customAdapter.refreshAdapter();
+                Log.d("ggg",dataList.size()+"");
+                Intent intent1=new Intent(MessengerActivity.this,DecodeActivity.class);
+//                Log.d("ggg",dataList.get(i).getImage());
+                intent1.putExtra("imageId",dataList.get(i).getId());
+                intent1.putExtra("friendId",friendId);
+//                intent1.putExtra("img",dataList.get(i).getImage());
+                startActivity(intent1);
+            }
+        });
+
 
 
     }
@@ -157,7 +154,11 @@ public class MessengerActivity extends AppCompatActivity {
 //                startActivity(intent);
 //
 //                finish();
-                selectImage();
+//                selectImage();
+                Intent intent=new Intent(getApplicationContext(), EncodeActivity.class);
+                intent.putExtra("friendId",friendId);
+                intent.putExtra("name",name);
+                startActivity(intent);
                 return false;
             }
         });
@@ -166,10 +167,6 @@ public class MessengerActivity extends AppCompatActivity {
     }
 
     public void selectImage() {
-//        Intent intent=new Intent();
-//        intent.setType("image/*");
-//        intent.setAction(Intent.ACTION_GET_CONTENT);
-//        startActivityForResult(intent,IMG_REQUEST);
 
         Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
         photoPickerIntent.setType("image/*");
@@ -177,34 +174,10 @@ public class MessengerActivity extends AppCompatActivity {
 
     }
 
-//    @Override
-//    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-//        super.onActivityResult(requestCode, resultCode, data);
-//        Log.d("uuu","OnActivity fcunction triggered ");
-//        Log.d("uuu","request Code "+requestCode);
-//        Log.d("uuu","rIMG_REQUEST CODE "+IMG_REQUEST);
-//        Log.d("uuu","RESULT OK "+RESULT_OK);
-//
-//        if (IMG_REQUEST==requestCode && requestCode==RESULT_OK && data!=null){
-//            Uri path=data.getData();
-//            Log.d("uuu","found URI path "+path);
-//            try {
-//                bitmap= MediaStore.Images.Media.getBitmap(getContentResolver(),path);
-//                uploadImage();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//    }
 
     @Override
     protected void onActivityResult(int reqCode, int resultCode, Intent data) {
         super.onActivityResult(reqCode, resultCode, data);
-
-//        Log.d("uuu", "OnActivity fcunction triggered ");
-//        Log.d("uuu", "request Code " + reqCode);
-//        Log.d("uuu", "rIMG_REQUEST CODE " + IMG_REQUEST);
-//        Log.d("uuu", "RESULT OK " + RESULT_OK);
 
         if (resultCode == RESULT_OK) {
 
@@ -322,6 +295,7 @@ public class MessengerActivity extends AppCompatActivity {
 //                        Log.d("lll", "get msg :" + validity.get(i).getMsg());
 
                         if (validity.get(i).getId() != -1) {
+                            dataList.add(new MessageItem(validity.get(i).getId(), validity.get(i).getMsg(), new User(name), false, validity.get(i).getImage()));
 
                             if (validity.get(i).getId1() == self) {
                                 if (!customAdapter.findMsg(validity.get(i).getId())) {
@@ -335,9 +309,8 @@ public class MessengerActivity extends AppCompatActivity {
 
                                     customAdapter.add(new MessageItem(validity.get(i).getId(), validity.get(i).getMsg(), new User(name), false, validity.get(i).getImage()));
                                 }
-
-
                             }
+
                             mHandler.post(new Runnable() {
                                 @Override
                                 public void run() {
@@ -423,51 +396,18 @@ public class MessengerActivity extends AppCompatActivity {
     }
 
 
-//    public class EasyProcess extends AsyncTask<String, Boolean, Void> {
-//
-//        ProgressDialog progressDialog;
-//        Context context;
-//        MessageAdapter messageAdapter;
-//
-//
-//        public EasyProcess(MessageAdapter messageAdapter, Context context) {
-//            this.messageAdapter=messageAdapter;
-//            this.context=context;
-//
-//        }
-//
-//        @Override
-//        protected void onPreExecute() {
-//            super.onPreExecute();
-////            progressDialog = ProgressDialog.show(context, "", "Please wait...");
-//
-//
-//        }
-//
-//        @Override
-//        protected Void doInBackground(String... params) {
-//            try {
-//
-//
-//            } catch (Exception e) {
-//                Log.e("eeeee", "easy: " + e.getMessage());
-//            }
-//
-//
-//            return null;
-//        }
-//
-//        @Override
-//        protected void onPostExecute(Void aVoid) {
-//            customAdapter.refreshAdapter();
-//            Log.d("vvv","refreshed");
-//            super.onPostExecute(aVoid);
-////            progressDialog.dismiss();
-//
-//
-//
-//        }
-//
-//    }
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+    }
 
+    @Override
+    public void onStartTextEncoding() {
+
+    }
+
+    @Override
+    public void onCompleteTextEncoding(ImageSteganography imageSteganography) {
+
+    }
 }

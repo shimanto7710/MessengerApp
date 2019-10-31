@@ -39,4 +39,5 @@ dependencies {
     androidTestImplementation 'com.squareup.retrofit2:retrofit:2.6.0'
     implementation 'com.squareup.retrofit2:retrofit:2.6.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.6.0'
+    implementation 'com.github.aagarwal1012:Image-Steganography-Library-Android:v1.0'
 }
