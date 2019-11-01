@@ -118,14 +118,17 @@ public class MessengerActivity extends AppCompatActivity implements TextDecoding
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                customAdapter.refreshAdapter();
-                Log.d("ggg",dataList.size()+"");
-                Intent intent1=new Intent(MessengerActivity.this,DecodeActivity.class);
+                if (dataList.get(i).getMessage().equals("none@msg")){
+
+                    customAdapter.refreshAdapter();
+                    Log.d("ggg",dataList.size()+"");
+                    Intent intent1=new Intent(MessengerActivity.this,DecodeActivity.class);
 //                Log.d("ggg",dataList.get(i).getImage());
-                intent1.putExtra("imageId",dataList.get(i).getId());
-                intent1.putExtra("friendId",friendId);
+                    intent1.putExtra("imageId",dataList.get(i).getId());
+                    intent1.putExtra("friendId",friendId);
 //                intent1.putExtra("img",dataList.get(i).getImage());
-                startActivity(intent1);
+                    startActivity(intent1);
+                }
             }
         });
 
